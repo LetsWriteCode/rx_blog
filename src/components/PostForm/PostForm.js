@@ -2,9 +2,8 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { Card, CardTitle, CardText } from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
+import RaisedButton from 'material-ui/RaisedButton';
 import { Editor } from 'react-draft-wysiwyg';
-import { convertToRaw } from 'draft-js';
-import draftToHtml from 'draftjs-to-html';
 
 import { submitPost } from 'modules/posts';
 
@@ -31,12 +30,10 @@ class PostForm extends PureComponent {
 
     const { title, editorState } = this.state;
 
-    const contentState = editorState.getCurrentContent();
-
     // submit the new post
     this.props.submitPost({
       title,
-      content: draftToHtml(convertToRaw(contentState))
+      content: editorState.getCurrentContent()
     });
 
     // clear the form
@@ -62,7 +59,13 @@ class PostForm extends PureComponent {
               onEditorStateChange={this.handleEditorChange}
             />
             <br /><br />
-            <button type="submit">Submit</button>
+            <div className="PostForm__controls">
+              <RaisedButton
+                label="Submit"
+                primary={true}
+                onTouchTap={this.handleFormSubmit}
+              />
+            </div>
           </form>
         </CardText>
       </Card>

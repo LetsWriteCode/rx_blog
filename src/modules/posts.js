@@ -2,28 +2,56 @@ import { createAction, handleActions } from 'redux-actions';
 import { combineEpics } from 'redux-observable';
 import { Observable } from 'rxjs/Observable';
 import { createSelector } from 'reselect';
+import { convertToRaw } from 'draft-js';
 
 import db from 'lib/db';
 import { initApp } from 'modules/common';
-
-// state
-const defaultState = {
-  data: []
-};
 
 // actions
 export const submitPost = createAction('SUBMIT_POST');
 export const postSubmitted = createAction('POST_SUBMITTED');
 export const receivePosts = createAction('RECEIVE_POSTS');
 
-// refs
+// default state shape
+const defaultState = {
+  data: []
+};
+
+// reducer
+export default handleActions(
+  {
+    [receivePosts]: (state, { payload }) => ({
+      ...state,
+      data: payload || defaultState.data
+    })
+  },
+  defaultState
+);
+
+// selectors
+const getPostsById = state => state.posts.data;
+
+/* Returns an array of posts in descending order with the content parsed */
+export const postsInDescOrder = createSelector([getPostsById], postsById => {
+  let posts = [];
+
+  Object.keys(postsById).forEach(id => {
+    const post = postsById[id];
+    posts = [{ ...post, id, content: JSON.parse(post.content) }, ...posts];
+  });
+
+  return Object.values(posts);
+});
+
+// db refs
 const postsRef = db.ref('posts');
 
 // functions
-const createPost = ({ title, content }) => {
-  const post = postsRef.push({ title, content });
-  return post;
-};
+const createPost = ({ title, content }) =>
+  postsRef.push({
+    title,
+    content: JSON.stringify(convertToRaw(content))
+  });
 
 // observables
 const postsObservable = Observable.create(observer => {
@@ -46,27 +74,3 @@ const receivePostsEpic = action$ =>
     .switchMap(() => postsObservable.map(receivePosts));
 
 export const postsEpic = combineEpics(submitPostEpic, receivePostsEpic);
-
-// selectors
-const getPostsById = state => state.posts.data;
-
-export const postsInDescOrder = createSelector([getPostsById], postsById => {
-  let posts = [];
-
-  Object.keys(postsById).forEach(id => {
-    posts = [{ id, ...postsById[id] }, ...posts];
-  });
-
-  return Object.values(posts);
-});
-
-// reducer
-export default handleActions(
-  {
-    [receivePosts]: (state, { payload }) => ({
-      ...state,
-      data: payload || defaultState.data
-    })
-  },
-  defaultState
-);
