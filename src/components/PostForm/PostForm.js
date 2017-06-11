@@ -6,14 +6,16 @@ import RaisedButton from 'material-ui/RaisedButton';
 import { Editor } from 'react-draft-wysiwyg';
 
 import { submitPost } from 'modules/posts';
+import ImageUploader from 'components/ImageUploader';
 
 import './PostForm.css';
 
 const updateTitle = title => state => ({ ...state, title });
 const updateEditorState = editorState => state => ({ ...state, editorState });
+const updateImage = image => state => ({ ...state, image });
 
 class PostForm extends PureComponent {
-  static defaultState = { title: '', editorState: null };
+  static defaultState = { title: '', editorState: null, image: null };
 
   state = { ...PostForm.defaultState };
 
@@ -31,14 +33,16 @@ class PostForm extends PureComponent {
     const { title, editorState } = this.state;
 
     // submit the new post
-    this.props.submitPost({
-      title,
-      content: editorState.getCurrentContent()
-    });
+    // this.props.submitPost({
+    //   title,
+    //   content: editorState.getCurrentContent()
+    // });
 
     // clear the form
     this.resetForm();
   };
+
+  handleFileChange = image => this.setState(updateImage(image));
 
   render() {
     return (
@@ -53,17 +57,25 @@ class PostForm extends PureComponent {
               value={this.state.title}
               onChange={this.handleTitleChange}
             />
-            <br /><br />
+            <br />
+            <br />
+            <ImageUploader
+              value={this.state.image}
+              onChange={this.handleFileChange}
+            />
+            <br />
+            <br />
             <Editor
               editorState={this.state.editorState}
               onEditorStateChange={this.handleEditorChange}
             />
-            <br /><br />
+            <br />
+            <br />
             <div className="PostForm__controls">
               <RaisedButton
                 label="Submit"
-                primary={true}
                 onTouchTap={this.handleFormSubmit}
+                primary
               />
             </div>
           </form>
