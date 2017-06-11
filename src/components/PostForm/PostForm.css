@@ -1,0 +1,6 @@
+.PostForm__textarea {
+  border-color: rgb(224, 224, 224);
+}
+.PostForm__textarea:focus {
+  outline-color: rgb(0, 188, 212);
+}
