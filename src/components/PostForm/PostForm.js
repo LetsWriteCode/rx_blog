@@ -2,27 +2,44 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { Card, CardTitle, CardText } from 'material-ui/Card';
 import TextField from 'material-ui/TextField';
+import { Editor } from 'react-draft-wysiwyg';
+import { convertToRaw } from 'draft-js';
+import draftToHtml from 'draftjs-to-html';
 
 import { submitPost } from 'modules/posts';
 
 import './PostForm.css';
 
 const updateTitle = title => state => ({ ...state, title });
-const updateContent = content => state => ({ ...state, content });
+const updateEditorState = editorState => state => ({ ...state, editorState });
 
 class PostForm extends PureComponent {
-  static defaultState = { title: '', content: '' };
+  static defaultState = { title: '', editorState: null };
 
   state = { ...PostForm.defaultState };
 
-  resetForm = () => {
-    this.setState(() => ({ ...PostForm.defaultState }));
-  };
+  resetForm = () => this.setState(() => ({ ...PostForm.defaultState }));
+
+  handleTitleChange = (e, v) => this.setState(updateTitle(v));
+
+  handleEditorChange = editorState =>
+    this.setState(updateEditorState(editorState));
 
   handleFormSubmit = e => {
+    // prevent the form submission action
     e.preventDefault();
-    const { title, content } = this.state;
-    this.props.submitPost({ title, content });
+
+    const { title, editorState } = this.state;
+
+    const contentState = editorState.getCurrentContent();
+
+    // submit the new post
+    this.props.submitPost({
+      title,
+      content: draftToHtml(convertToRaw(contentState))
+    });
+
+    // clear the form
     this.resetForm();
   };
 
@@ -37,15 +54,12 @@ class PostForm extends PureComponent {
               floatingLabelText="Title"
               style={{ marginTop: -40 }}
               value={this.state.title}
-              onChange={(e, v) => this.setState(updateTitle(v))}
+              onChange={this.handleTitleChange}
             />
             <br /><br />
-            <textarea
-              className="PostForm__textarea"
-              cols="80"
-              rows="20"
-              value={this.state.content}
-              onChange={e => this.setState(updateContent(e.target.value))}
+            <Editor
+              editorState={this.state.editorState}
+              onEditorStateChange={this.handleEditorChange}
             />
             <br /><br />
             <button type="submit">Submit</button>

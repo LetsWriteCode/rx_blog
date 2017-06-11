@@ -6,17 +6,23 @@ import { postsInDescOrder } from 'modules/posts';
 
 import './PostList.css';
 
+const createMarkup = content => ({ __html: content });
+
 const Post = ({ title, content }) =>
   <Card className="post">
     <CardTitle title={title} />
-    <CardText>{content}</CardText>
+    <CardText>
+      <div dangerouslySetInnerHTML={createMarkup(content)} />
+    </CardText>
   </Card>;
 
 const PostList = ({ posts }) =>
   <div>
-    {posts.map(post =>
-      <Post key={post.id} title={post.title} content={post.content} />
-    )}
+    {posts.length > 0
+      ? posts.map(post =>
+          <Post key={post.id} title={post.title} content={post.content} />
+        )
+      : <em>There are no posts to show</em>}
   </div>;
 
 const mapState = state => ({
