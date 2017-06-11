@@ -1,3 +1,7 @@
 .PostForm__controls {
   text-align: right;
 }
+
+.rdw-editor-toolbar * {
+  box-sizing: content-box;
+}
