@@ -33,10 +33,10 @@ class PostForm extends PureComponent {
     const { title, editorState } = this.state;
 
     // submit the new post
-    // this.props.submitPost({
-    //   title,
-    //   content: editorState.getCurrentContent()
-    // });
+    this.props.submitPost({
+      title,
+      content: editorState.getCurrentContent()
+    });
 
     // clear the form
     this.resetForm();
